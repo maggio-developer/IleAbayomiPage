@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>administrador</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="products_style.css">
+    <style>
+        #password-div{
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            justify-content: center;
+            margin-top: 3rem;
+        }
+        #password{
+            width: calc(35vw + 50px);
+            font-size: calc(2vw + 20px);
+            margin-left: auto; 
+            margin-right: auto;
+        }
+        #add{
+            background-color: rgb(100, 177, 12);
+            color: #eee;
+            font-size: 50px;
+            width: 62px;
+            cursor:pointer;
+        }
+        .del{
+            background-color: rgb(177, 31, 12);
+            color: #eee;
+            font-size: 20px;
+            width: 126px;
+            cursor:pointer;
+        }
+        .edit{
+            background-color: rgb(206, 124, 58);
+            color: #eee;
+            font-size: 20px;
+            width: 126px;
+            cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+        <p style="text-align: center; margin-left: auto; margin-right: auto; margin-top: 7vh; font-size: calc(2vw + 20px);">CONTRASEÑA:</p>
+        <div id="password-div">
+            <input id="password" type="text">
+        </div>
+        <section class="products" id="productos">
+            <h2>Productos</h2>
+            
+            <br>
+            <p>Espere a que carguen los productos.<br>
+                Asegurese de colocar la contraseña correctamente.<br><br> 
+                Presione + para agregar un producto <br> <br>
+                <button id="add">+</button><br><br>
+                y luego "Publicar" para publicarlo.<br><br>
+                Presione el boton rojo para eliminar un producto y asegurese de confirmar escribiendo sí.<br><br>
+                Luego de publicar o eliminar un producto espere un momento a que se recargue todo.
+                <br><br>
+                Haga una acción a la vez, si crea 2 productos y publica uno el otro desaparecerá. Lo mismo aplica para la edición y eliminación.
+                <br><br>
+                Si presiona no publicar se actualizará. Espere pacientemente las actualizaciones e intente no presionar botones a la vez.
+            </p>
+            
+            <div class="products-flex" id="products-cage" style="margin-left: auto; margin-right: auto; width:80vw;"></div>
+        </section>
+
+        <script type="module" src="products.js"></script>
+
+        <script type="module">
+            let canClick = false;
+            import { getActivos, eliminarProducto, modificarProducto, agregarProducto, crearProducto } from './products.js';
+            let productos;
+
+            function getpassword(){
+                let element = document.getElementById("password");
+                return element.value;
+            }
+            let products_div = document.getElementById("products-cage")
+            async function publicar(nombre, img, precio, descripcion){
+                let response = await agregarProducto(getpassword(), nombre, precio, img, descripcion);
+                if (response == "error"){
+                    canClick = true;
+                    return;
+                }
+                await MostrarEnPantalla();
+            }
+
+            async function eliminar(nombre){
+                let response = await eliminarProducto(getpassword(), nombre);
+                if (response == "error"){
+                    canClick = true;
+                    return;
+                }
+                await MostrarEnPantalla();
+            }
+
+            async function modificar(viejoNombre, nombre, img, precio, descripcion){
+                let datos = {
+                    "nuevoNombre": nombre,
+                    "precio": precio,
+                    "imagen": img,
+                    "descripcion": descripcion 
+                }
+                let response = await modificarProducto(getpassword(), viejoNombre, datos);
+                if (response == "error"){
+                    canClick = true;
+                    return;
+                }
+                await MostrarEnPantalla();
+            }
+
+            async function procesarImagen(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    
+                    reader.onerror = () => reject("Error al leer el archivo.");
+                    
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.src = event.target.result;
+                        
+                        img.onerror = () => reject("Error al cargar la imagen en el objeto Image.");
+
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+
+                            const MAX_WIDTH = 800;
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            
+                            // Dibujamos la imagen (sea PNG, JPG o lo que sea) en el lienzo
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            // Forzamos la salida a WebP
+                            const dataUrl = canvas.toDataURL('image/webp', 0.7);
+                            resolve(dataUrl);
+                        };
+                    };
+                });
+            }
+
+            function crearProductoEditable(nombre, img, precio, descripcion){
+                let imagenSRC = img;
+
+                let product_div = document.createElement("div");
+                product_div.classList.add("product");
+                products_div.appendChild(product_div);
+
+                let img_div = document.createElement("div");
+                product_div.appendChild(img_div);
+                
+                let image = document.createElement("input");
+                image.style = "margin: auto;"
+                image.type = "file";
+                image.accept= "image/*, image/png, image/jpeg, image/webp";
+                
+
+                
+                if (img == ""  || img == " "){
+                    let p = document.createElement("p");
+                    p.style = "margin: auto; width: 250px; font-size: 0.9rem;"
+                    p.textContent = "sin imagen";
+                    img_div.appendChild(image);
+                    img_div.appendChild(p);
+                }else{
+                    let p = document.createElement("p");
+                    p.style = "margin: auto; width: 250px; font-size: 0.9rem;"
+                    p.textContent = "elige para cambiar la imagen:";
+                    let g = document.createElement("img");
+                    g.style = 
+                    g.src = img;
+                    img_div.appendChild(p);
+                    img_div.appendChild(image);
+                    img_div.appendChild(g);
+                }
+
+
+                
+                
+
+                let buttonDel = document.createElement("button");
+                buttonDel.textContent = "No publicar";
+                buttonDel.classList.add("del");
+                    
+                buttonDel.onclick = async function(){
+                    canClick = false;
+                    await MostrarEnPantalla();
+                    return
+                };
+
+
+                let divText = document.createElement("div");
+                product_div.appendChild(divText);
+                divText.appendChild(buttonDel)
+
+                let title = document.createElement("input");
+                title.placeholder = "Nombre del producto";
+                title.value = nombre;
+                title.classList.add("price");
+                divText.appendChild(title);
+
+                let price = document.createElement("input");
+                price.placeholder = "Precio (solo numero)";
+                price.value = precio;
+                price.classList.add("price");
+                divText.appendChild(price);
+ 
+                let description = document.createElement("textArea");
+                description.placeholder = "Descripción del producto";
+                description.value = descripcion;
+                description.style = "height: 135px; margin-top: 10px; resize: none;";
+                description.classList.add("descripcion");
+
+                let button = document.createElement("button");
+                button.textContent = "Publicar";
+                button.classList.add("consultar");
+                button.onclick = async function(){
+                    if (!canClick){
+                        return;
+                    };
+                    canClick = false;
+                    if (title.value == "" || title.value == " "){
+                        alert("El nombre es invalido!")
+                        return
+                    }
+                    if (price.value == "" || price.value == " "){
+                        alert("El precio es invalido!")
+                        return
+                    }
+
+                    let edit = true;
+
+                    if (imagenSRC == "" || imagenSRC == " "){
+                        edit = false;
+                    }
+
+                    const file = image.files[0];
+                    if (file){
+                        console.log("hay file " + file.name)
+                        imagenSRC = await procesarImagen(file);
+                    }
+                    
+                    if (imagenSRC == "" || imagenSRC == " "){
+                        alert("No hay imagen!")
+                        return
+                    }
+                    if (edit){
+                        modificar(nombre, title.value, imagenSRC, price.value, description.value)
+                    }else{
+                        publicar(title.value, imagenSRC, price.value, description.value)
+                    }
+                    
+                }
+
+
+                divText.appendChild(button);
+
+                divText.appendChild(description);
+
+                return product_div;
+            }
+            
+            async function MostrarEnPantalla(){
+                products_div.replaceChildren();
+                productos = await getActivos();
+                if (productos == "error"){
+                    location.reload();
+                }
+                products_div.replaceChildren()
+                for (let i = 0; i < productos.length; i++){
+                    crearProducto(productos[i].nombre, productos[i].imagen, productos[i].precio, productos[i].descripcion)
+
+                    let buttonDel = document.createElement("button");
+                    let productnombre = products_div.lastChild;
+                    let nombre = productnombre.nombre;
+                    buttonDel.textContent = "Eliminar " + nombre;
+                    buttonDel.style = "margin: auto 0; width: 220px;";
+                    buttonDel.classList.add("del");
+                    buttonDel.onclick = async function(){
+                        if (!canClick){
+                            return;
+                        };
+                        canClick = false;
+
+                        // Pedimos al usuario que escriba
+                        let respuesta = prompt("Vas a eliminar " + nombre + ". escriba si para confirmarlo");
+
+                        if (respuesta !== null && respuesta.toLowerCase().trim() === "si") {
+                            respuesta = true;
+                        } else {
+                            canClick = true;
+                            alert("No escribiste 'si', acción cancelada.");
+                            return
+                        }
+                        if (!respuesta){
+                            canClick = true;
+                            return;
+                        }   
+                        await eliminar(nombre);
+                    }
+
+                    let div = document.createElement("div");
+                    div.style = "display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; min-height: 250px;"
+                    products_div.appendChild(div);
+
+                    div.appendChild(buttonDel);
+
+                    let buttonEdit = document.createElement("button");
+                    buttonEdit.textContent = "Editar " + nombre;
+                    buttonEdit.style = "margin: auto 0; width: 220px;";
+                    buttonEdit.classList.add("edit");
+                    buttonEdit.onclick = async function(){
+                        if (!canClick){
+                            return;
+                        };
+                        let p = crearProductoEditable(nombre, productnombre.img, productnombre.precio, productnombre.descripcion);
+                        
+                        products_div.replaceChild(p, productnombre);
+                        div.remove();
+                    }
+                    div.appendChild(buttonEdit);
+                };
+                canClick = true;
+            };
+            await MostrarEnPantalla();     
+
+
+            let buttonAdd = document.getElementById("add");
+            buttonAdd.onclick = function(){
+                if (!canClick){
+                    return;
+                };
+                crearProductoEditable("", "", "", "")
+            }
+
+
+    </script>
+</body>
+</html>
