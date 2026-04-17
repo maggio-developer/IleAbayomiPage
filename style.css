@@ -235,7 +235,7 @@ section{
 .hero{
     padding: 0 1rem;
     height: 100vh;
-    background-image: url("assets/img/hero.webp");
+    background-image: url("/assets/img/hero.webp");
     background-position: center;
     background-size: cover;
     overflow: hidden;
