@@ -8,20 +8,22 @@ Al momento de publicación de esta página cursa el primer año de Bachillerato 
 Este es el repositorio oficial de la plataforma web de **Ilé Abayomí** y **Tienda Mística Jalú**. 
 El sitio está diseñado para ofrecer una experiencia fluida, espiritual y mística, centralizando la información del templo en Montevideo y el catálogo de productos esotéricos.
 
-## Proyecto optimizado
+### Proyecto optimizado
 
 El sitio ha sido sometido a un proceso intensivo de optimización técnica, logrando métricas de alto rendimiento en **Google PageSpeed Insights**:
 
-## Tecnologías
+### Tecnologías
 
 - **Frontend:** HTML5, CSS3 y Javascript.
 - **Hosting:** Hostinger y GitHub Pages.
 - **Backend** Google Apps Script (JS).
   
-## Organización
+### Organización
 
 - **Landing page:** Introducción espiritual y filosofía de Nación Umbanda Kimbanda.
-- **Dynamic Catalog:** Tienda Mística Jalú, catálogo de productos, cursos y terapias con diseño optimizado. **Sistema de productos:** El dueño del sitio web es poseedor de un sistema que es capaz de cargar, eliminar o editar productos.
+- **Dynamic Catalog:** Tienda Mística Jalú, catálogo de productos, cursos y terapias con diseño optimizado.
+- **Sistema de productos:** El dueño del sitio web es poseedor de un sistema que es capaz de cargar, eliminar o editar productos sin costo alguno y alta velocidad.
+- **Optimización imágenes:** Todas las imagenes estan en formato webp, incluso las subidas en el sistema de productos con un limite de tamaño.
 
 - `/index.html`: Página principal del templo.
 - `/TiendaMistica/`: Directorio de la tienda.
